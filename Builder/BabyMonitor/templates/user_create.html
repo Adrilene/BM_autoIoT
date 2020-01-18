@@ -1,0 +1,61 @@
+{%  extends 'base.html' %}
+
+{%  from 'library/utils.html' import render_field, render_field_with_icon, want_delete %}
+
+{%  block bar %}
+    </div>
+</div>
+{%  endblock %}
+
+{%  block page %}
+<div class="container mt-5">
+
+        <!--Grid row-->
+        <div class="row content-row">
+            <div class="col-12">
+                <div class="card testimonial-card">
+                     <div class="card primary-color text-center py-4">
+
+                         <h3 class="white-text">Create new User</h3>
+
+                    </div>
+
+                    <!--Accordion wrapper-->
+                    <div class="container pt-3 col-8">
+                        <form id="user-form" class="login-form" action="" method="post" name="post" enctype=multipart/form-data>
+                            {{ form_create_user.hidden_tag() }}
+
+                            {{ render_field(form_create_user.username) }}
+                            
+                            {{ render_field(form_create_user.password) }}
+                            {{ render_field(form_create_user.password_confirm) }}
+
+                            {{ render_field(form_create_user.role) }}
+
+                            {{ render_field(form_create_user.type_form_user) }}
+                          </form>
+
+                         <div class="modal-footer justify-content-center">
+                            <a id="createUserButton" type="button" class="btn btn-rounded btn-primary-modal secondary-color">Save</a>
+                        </div>
+                    </div>
+                    <!--/.Accordion wrapper-->
+                </div>
+            </div>
+
+        </div>
+</div>
+
+
+<script>
+
+    $(document).ready(function(){
+        $('.mdb-select').material_select();
+
+        $('#createUserButton').click(function () {
+           $('#user-form').submit();
+        });
+    });
+</script>
+
+{%  endblock %}
