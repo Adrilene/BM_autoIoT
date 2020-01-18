@@ -242,20 +242,6 @@ from models.MonitorCryingSensor import MonitorCryingSensor
 from models.MonitorCryingSensorData import MonitorCryingSensorData
 
 
-from models.SmartPhone import SmartPhone
-
-from models.SmartPhoneNotificationSensor import SmartPhoneNotificationSensor
-
-from models.SmartPhoneNotificationSensorData import SmartPhoneNotificationSensorData
-
-
-from models.SmartTv import SmartTv
-
-from models.SmartTvCommandSensor import SmartTvCommandSensor
-
-from models.SmartTvCommandSensorData import SmartTvCommandSensorData
-
-
 
 if __name__ == '__main__':
     manager.run()

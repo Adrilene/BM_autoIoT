@@ -10,8 +10,8 @@ class Monitor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    barcode = db.Column(db.String)
     name = db.Column(db.String)
+    barcode = db.Column(db.String)
     key = db.Column(db.String, unique=True, nullable=False)
 
     breathing_sensor_sensor = db.relationship("MonitorBreathingSensor", uselist=False, backref="monitor", cascade="all, delete-orphan")
