@@ -175,15 +175,6 @@ def baby_monitor_project_data_monitor(client, userdata, msg):
                     print('Alert parents!')
                     smP.notification_sensor_sensor.add_metric("The baby hasn't been breathing for {} seconds!".format(changes))
 
-                if message['breathing_sensor_sensor']['time_no_breathing'] > 7:
-                    if tv:
-                       tv_in = tv.get_tv(smP)
-                       if tv_in:
-                            tv_in.change_status(smP)
-                            tv_in.income_command = True
-                    else:
-                        print('TV is off')
-
 
                 if not message['breathing_sensor_sensor']['breathing']:
                     count = 0
@@ -271,19 +262,30 @@ def baby_monitor_project_data_smart_phone(client, userdata, msg):
     '''
     Callback function triggered when a message arrives in the topic "baby_monitor_project/data/smart_phone"
     '''
+
+    global tv
     try:
         message = json.loads(msg.payload)
         device = SmartPhone.query.filter_by(key=message['key']).first()
+        monitor = Monitor.query.filter_by(key=message['key']).first()
         '''tv = SmartTv.query.filter_by(key=message['key'])
         print('Teste ', tv)'''
-        
-        if device: #Device in the database
-            print(device)
+
+        #get_time_no_breathing_from_monitor()
+        if device and not tv: #Device in the database
             if 'notification_sensor_sensor' in message:
                 baby_monitor_project_register_smart_phone(client, userdata, msg)
                 device.notification_sensor_sensor.add_metric_from_dict(message['notification_sensor_sensor'])
-            
-    
+
+            if message['breathing_sensor_sensor']['time_no_breathing'] > 7:
+                if tv:
+                    if not tv.status:
+                        tv.command_sensor_sensor.add_metric("status", device)
+                    tv.command_sensor_sensor.add_metric("message", device)
+                    print('AQUI TV COMMAND')
+                else:
+                    print('TV is off')
+
             db.session.add(device)
             db.session.commit()
     
@@ -304,8 +306,7 @@ def baby_monitor_project_register_smart_tv(client, userdata, msg):
     try:
         message = json.loads(msg.payload)
         device = SmartTv.query.filter_by(key=message['key']).first()
-        tv = device
-        if not device: #Device is not in the database
+        if not device and not tv: #Device is not in the database
             print('Creating new device.')
             device = SmartTv()
             device.key = message['key']
@@ -318,7 +319,8 @@ def baby_monitor_project_register_smart_tv(client, userdata, msg):
             
             if 'key' in message:
                 device.key = message['key']
-            
+
+            tv = device
     
             db.session.add(device)
             db.session.commit()
@@ -368,22 +370,22 @@ def baby_monitor_project_data_smart_tv(client, userdata, msg):
     Callback function triggered when a message arrives in the topic "baby_monitor_project/data/smart_tv"
     '''
     baby_monitor_project_register_smart_tv(client, userdata, msg)
-    global changes 
+    global changes, tv
     try:
         message = json.loads(msg.payload)
         device = SmartTv.query.filter_by(key=message['key']).first()
+        smP = SmartPhone.query.filter_by(key=message['key']).first()
         if device: #Device in the database
             print('Adding data to device TV.')                
-            tv = device          
-            if 'command_sensor_sensor' in message:
-                if device.income_command and device.status:
-                    message['command_sensor_sensor']['command'] = "The baby hasn't been breathing for {} seconds!".format(changes)
-
-                device.command_sensor_sensor.add_metric_from_dict(message['command_sensor_sensor'])
+            tv = device
+            #if 'command_sensor_sensor' in message:
+            #device.command_sensor_sensor.add_metric_from_dict(message['command_sensor_sensor'])
             
             db.session.add(device)
             db.session.commit()
-    
+
+        if smP:
+            print('ESTOU AQUI O smP', smP)
         else: #Device not in the database
             #print('Device SmartTV not in the database.')
             baby_monitor_project_register_smart_tv(client, userdata, msg)

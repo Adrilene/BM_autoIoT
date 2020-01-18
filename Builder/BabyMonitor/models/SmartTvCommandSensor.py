@@ -23,12 +23,33 @@ class SmartTvCommandSensor(db.Model):
     def created(self):
         return self.created_at.strftime("%d/%m/%Y %H:%M:%S")
 
+    def change_status(self):
+        self.status = not self.status
+        print('Status alterado', self.status)
+
+    def show_message(self, command):
+        if self.status:
+            print(command)
+
+    def show_command(self, new_metric):
+        print("\nFrom SmarTv")
+        print("Command Received!")
+        print(new_metric.command, '\n')
+
+    def receive_commands(self, command):
+        if 'status' in command.lower():
+            self.change_status()
+        elif 'message' in command.lower():
+            self.show_message(command)
+
     def add_metric(self, command, caller):
         if 'SmartPhone' in str(caller):
             new_metric = SmartTvCommandSensorData(smart_tv_command_sensor=self)
 
             new_metric.command = command
 
+            self.show_command(new_metric)
+            self.receive_commands(command)
             db.session.add(new_metric)
             db.session.commit()
 

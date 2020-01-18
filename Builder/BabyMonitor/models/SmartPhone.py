@@ -3,6 +3,8 @@ from main import db
 from datetime import datetime
 
 from models.SmartPhoneNotificationSensor import SmartPhoneNotificationSensor
+from models.MonitorBreathingSensorData import MonitorBreathingSensorData
+
 
 
 class SmartPhone(db.Model):
@@ -20,6 +22,9 @@ class SmartPhone(db.Model):
 
     def created(self):
         return self.created_at.strftime("%d/%m/%Y %H:%M:%S")
+
+    def get_time_no_breathing_from_monitor(self):
+        print(MonitorBreathingSensorData.time_no_breathing)
 
     def init_sensors(self):
         if self.id is None:
