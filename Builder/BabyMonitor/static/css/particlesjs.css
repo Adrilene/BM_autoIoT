@@ -1,0 +1,17 @@
+#particles-js{
+    position:absolute; width: 100%;
+    height: 100%;
+    background-color: #42455f;
+    background-image: url("");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: 50% 50%;
+}
+
+.particles-text{
+  position: absolute;
+  text-align: center;
+  top: 40%;
+  width: 100%;
+  line-height: 0.4em;
+}

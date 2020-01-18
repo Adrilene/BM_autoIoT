@@ -1,13 +1,13 @@
 {
-    "send_interval": [
-        1,
-        1
-    ],
+    "send_data_topic": "baby_monitor_project/data/monitor",
     "fields": {
         "name": "test",
         "barcode": "test"
     },
-    "key": "monitor-x",
+    "send_interval": [
+        2,
+        2
+    ],
     "sensors": {
         "breathing_sensor_sensor": {
             "breathing": [
@@ -40,6 +40,6 @@
             ]
         }
     },
-    "send_data_topic": "baby_monitor_project/data/monitor",
-    "register_topic": "baby_monitor_project/register/monitor"
+    "register_topic": "baby_monitor_project/register/monitor",
+    "key": "monitor-x"
 }

@@ -84,6 +84,12 @@ if __name__ == '__main__':
     # MonitorSocket manages web socket communication between client and server
     from sockets import MonitorSocket
     socketio.on_namespace(MonitorSocket(app, "/data_monitor"))
+    # SmartPhoneSocket manages web socket communication between client and server
+    from sockets import SmartPhoneSocket
+    socketio.on_namespace(SmartPhoneSocket(app, "/data_smart_phone"))
+    # SmartTvSocket manages web socket communication between client and server
+    from sockets import SmartTvSocket
+    socketio.on_namespace(SmartTvSocket(app, "/data_smart_tv"))
 
 
 
@@ -119,6 +125,36 @@ if __name__ == '__main__':
     # Automatically generates an API based on MonitorCryingSensorData model
     from models import MonitorCryingSensorData
     api.create_api(MonitorCryingSensorData, methods=['GET', 'POST', 'DELETE']
+                  )
+
+
+    # Automatically generates an API based on SmartPhone model
+    from models import SmartPhone
+    api.create_api(SmartPhone, methods=['GET', 'POST', 'DELETE'], primary_key='key')
+
+    # Automatically generates an API based on SmartPhoneNotificationSensor model
+    from models import SmartPhoneNotificationSensor
+    api.create_api(SmartPhoneNotificationSensor, methods=['GET', 'POST', 'DELETE']
+                   )
+
+    # Automatically generates an API based on SmartPhoneNotificationSensorData model
+    from models import SmartPhoneNotificationSensorData
+    api.create_api(SmartPhoneNotificationSensorData, methods=['GET', 'POST', 'DELETE']
+                  )
+
+
+    # Automatically generates an API based on SmartTv model
+    from models import SmartTv
+    api.create_api(SmartTv, methods=['GET', 'POST', 'DELETE'], primary_key='key')
+
+    # Automatically generates an API based on SmartTvCommandSensor model
+    from models import SmartTvCommandSensor
+    api.create_api(SmartTvCommandSensor, methods=['GET', 'POST', 'DELETE']
+                   )
+
+    # Automatically generates an API based on SmartTvCommandSensorData model
+    from models import SmartTvCommandSensorData
+    api.create_api(SmartTvCommandSensorData, methods=['GET', 'POST', 'DELETE']
                   )
 
 

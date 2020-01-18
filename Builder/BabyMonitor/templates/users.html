@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block page %}
+
+
+{% from 'library/utils.html' import want_delete %}
+
+
+<div class="container">
+
+    <div class="card mt-5">
+
+        <div class="row text-center justify-content-center mt-4">
+            <h1>Users</h1>
+        </div>
+
+        <div class="row text-center justify-content-center my-2">
+            <a class="btn btn-rounded secondary-color" href="{{  url_for('users_template.create_user') }}"><i class="fa fa-plus"></i> Add User</a>
+        </div>
+
+        <div id="datatable" class="container my-3">
+
+            <div class="table-responsive">
+                <table id="users-table" class="table table-text" data-page-length="15">
+                     <thead class="primary-color small-thead">
+                        <tr class="text-white">
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{  user.id }}</td>
+                            <td>{{  user.username }}</td>
+                            <td>{{  user.role.name }}</td>
+
+                            <td>
+                                <a class="btn-floating btn-sm green " href="{{ url_for('users_template.edit_user', id=user.id) }}" ><i class="fa fa-pencil-alt" data-toggle="tooltip" data-placement="top" title="Edit User"></i></a>
+                                <a class="btn-floating btn-sm red" data-toggle="modal" href="#" data-target="{{ '#deleteModal' + user.id|string }}"><i class="fa fa-trash" data-toggle="tooltip" data-placement="top" title="Delete User"></i></a>
+                            </td>
+
+                            {{  want_delete(user.id|string, url_for('users_template.delete', id=user.id)) }}
+
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% from 'library/imports.html' import import_datatable %}
+{{   import_datatable() }}
+
+<script>
+    $(document).ready(function() {
+        $('#users-table' ).DataTable({
+            "info": false,
+            "language": {
+                "lengthMenu": "",
+                "search": "",
+                "zeroRecords": "No Station registered",
+                "emptyTable": "No Station registered",
+                "paginate": {
+                    "first": "First",
+                    "previous": "Previous",
+                    "next": "Next",
+                    "last": "Last"
+                }
+            }
+        });
+
+        initialize_table('datatable', 'stations-table', false);
+    });
+</script>
+
+
+
+{% endblock %}
