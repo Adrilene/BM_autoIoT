@@ -25,7 +25,7 @@ class SmartTvCommandSensor(db.Model):
 
     def change_status(self):
         self.status = not self.status
-        print('Status alterado', self.status)
+        print('Status: ', self.status)
 
     def show_message(self, command):
         if self.status:

@@ -268,23 +268,20 @@ def baby_monitor_project_data_smart_phone(client, userdata, msg):
         message = json.loads(msg.payload)
         device = SmartPhone.query.filter_by(key=message['key']).first()
         monitor = Monitor.query.filter_by(key=message['key']).first()
-        '''tv = SmartTv.query.filter_by(key=message['key'])
-        print('Teste ', tv)'''
+        sensor =  monitor.breathing_sensor_sensor.get_last_metric_data('time_no_breathing')
 
-        #get_time_no_breathing_from_monitor()
+        if sensor.__repr__('time_no_breathing') > 7:
+            if tv:
+                if not tv.status:
+                    tv.command_sensor_sensor.add_metric("status", device)
+                tv.command_sensor_sensor.add_metric("message", device)
+            else:
+                print('TV is off')
+
         if device and not tv: #Device in the database
             if 'notification_sensor_sensor' in message:
                 baby_monitor_project_register_smart_phone(client, userdata, msg)
-                device.notification_sensor_sensor.add_metric_from_dict(message['notification_sensor_sensor'])
-
-            if message['breathing_sensor_sensor']['time_no_breathing'] > 7:
-                if tv:
-                    if not tv.status:
-                        tv.command_sensor_sensor.add_metric("status", device)
-                    tv.command_sensor_sensor.add_metric("message", device)
-                    print('AQUI TV COMMAND')
-                else:
-                    print('TV is off')
+                device.notification_sensor_sensor.add_metric_from_dict(message['notification_sensor_sensor']) 
 
             db.session.add(device)
             db.session.commit()
@@ -384,8 +381,6 @@ def baby_monitor_project_data_smart_tv(client, userdata, msg):
             db.session.add(device)
             db.session.commit()
 
-        if smP:
-            print('ESTOU AQUI O smP', smP)
         else: #Device not in the database
             #print('Device SmartTV not in the database.')
             baby_monitor_project_register_smart_tv(client, userdata, msg)

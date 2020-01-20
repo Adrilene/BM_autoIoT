@@ -57,9 +57,6 @@ class MonitorBreathingSensor(db.Model):
         except Exception as e:
             print('Error inserting metric!', e)
 
-
-
-
     def number_of_metrics(self):
         return self.metrics.count()
 
@@ -79,5 +76,4 @@ class MonitorBreathingSensor(db.Model):
             return None
         
         metric = self.metrics.filter(getattr(MonitorBreathingSensorData, metric_name) != None).order_by(MonitorBreathingSensorData.created_at.desc()).first()
-
         return metric
