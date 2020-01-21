@@ -8,6 +8,7 @@ from models.SmartTvCommandSensorData import SmartTvCommandSensorData
 from models.SmartTv import *
 
 class SmartTvCommandSensor(db.Model):
+        
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -16,6 +17,8 @@ class SmartTvCommandSensor(db.Model):
     smart_tv_id = db.Column(db.Integer, db.ForeignKey("smart_tv.id"))
 
     metrics = db.relationship("SmartTvCommandSensorData", backref="smart_tv_command_sensor", lazy='dynamic', cascade="all, delete-orphan")
+
+    status = False
 
     def __repr__(self):
         return "<SmartTvCommandSensor {}>".format(self.id)
@@ -28,19 +31,21 @@ class SmartTvCommandSensor(db.Model):
         print('Status: ', self.status)
 
     def show_message(self, command):
-        if self.status:
-            print(command)
+        pass
 
     def show_command(self, new_metric):
         print("\nFrom SmarTv")
         print("Command Received!")
         print(new_metric.command, '\n')
+        self.receive_commands(new_metric.command)
 
     def receive_commands(self, command):
         if 'status' in command.lower():
             self.change_status()
         elif 'message' in command.lower():
             self.show_message(command)
+        else:
+            print('Command not recognized')
 
     def add_metric(self, command, caller):
         if 'SmartPhone' in str(caller):
@@ -49,9 +54,11 @@ class SmartTvCommandSensor(db.Model):
             new_metric.command = command
 
             self.show_command(new_metric)
-            self.receive_commands(command)
             db.session.add(new_metric)
             db.session.commit()
+
+            return True
+        return False
 
     def add_metric_from_dict(self, D):
         try:
@@ -79,9 +86,6 @@ class SmartTvCommandSensor(db.Model):
             db.session.commit()
         except Exception as e:
             print('Error inserting metric!', e)
-
-
-
 
     def number_of_metrics(self):
         return self.metrics.count()
