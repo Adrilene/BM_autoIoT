@@ -2,10 +2,11 @@ from main import db
 
 from datetime import datetime
 
-
 from models.SmartTvCommandSensorData import SmartTvCommandSensorData
 
 from models.SmartTv import *
+
+import re
 
 class SmartTvCommandSensor(db.Model):
         
@@ -18,20 +19,24 @@ class SmartTvCommandSensor(db.Model):
 
     metrics = db.relationship("SmartTvCommandSensorData", backref="smart_tv_command_sensor", lazy='dynamic', cascade="all, delete-orphan")
 
-    status = False
-
     def __repr__(self):
         return "<SmartTvCommandSensor {}>".format(self.id)
 
     def created(self):
         return self.created_at.strftime("%d/%m/%Y %H:%M:%S")
 
-    def change_status(self):
-        self.status = not self.status
-        print('Status: ', self.status)
+    def change_status(self, status):
+        new_metric = SmartTvCommandSensorData(smart_tv_command_sensor=self)
 
-    def show_message(self, command):
-        pass
+        new_metric.status = status
+
+        db.session.add(new_metric)
+        db.session.commit()
+
+    def show_message(self, notification):
+        print("\nFrom SmarTv")
+        print("Notification Received!")
+        print(notification, '\n')
 
     def show_command(self, new_metric):
         print("\nFrom SmarTv")
@@ -41,9 +46,13 @@ class SmartTvCommandSensor(db.Model):
 
     def receive_commands(self, command):
         if 'status' in command.lower():
-            self.change_status()
+            if 'true' in command.lower():
+                self.change_status(True)
+            elif 'false' in command.lower():
+                self.change_status(False)
         elif 'message' in command.lower():
-            self.show_message(command)
+            get_notification = command.lower()[8:]
+            self.show_message(get_notification)
         else:
             print('Command not recognized')
 

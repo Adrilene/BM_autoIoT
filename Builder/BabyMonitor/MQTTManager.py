@@ -271,18 +271,17 @@ def baby_monitor_project_data_smart_phone(client, userdata, msg):
         monitor = Monitor.query.filter_by(key=message['key']).first()
         sensor =  monitor.breathing_sensor_sensor.get_last_metric_data('time_no_breathing')
 
-        if sensor.__repr__('time_no_breathing') > 7:
+        if getattr(sensor,'time_no_breathing') > 7:
+            
             if tv:
-                if not tv.command_sensor_sensor.status:
-                    print('HELLO')
-                    if not tv.command_sensor_sensor.add_metric("status", device):
+                sensorTv = tv.command_sensor_sensor.get_last_metric_data('status')
+                if not getattr(sensorTv,'status'):
+                    if not tv.command_sensor_sensor.add_metric("status true", device):
                         print('Error connecting the TV')
-                    print(tv.command_sensor_sensor.status)
 
-                print(tv.command_sensor_sensor.status)
-                if tv.command_sensor_sensor.add_metric("message", device) and tv.command_sensor_sensor.status:
-                    tv.command_sensor_sensor.receive_message(' ')
-                    
+                message1 = str("message " + (device.notification_sensor_sensor.get_last_metric_data('notification'),'notification'), device)
+                if tv.command_sensor_sensor.add_metric(message1) and getattr(sensorTv,'status'):
+                    tv.command_sensor_sensor.add_metric("status false", device)
                 else:
                     print('Error sending the message to TV.')
 
@@ -303,7 +302,6 @@ def baby_monitor_project_data_smart_phone(client, userdata, msg):
                 
     except Exception as e:
         print(e)
-
           
 def baby_monitor_project_register_smart_tv(client, userdata, msg):
     '''
@@ -387,8 +385,7 @@ def baby_monitor_project_data_smart_tv(client, userdata, msg):
         
         if not tv:
             tv = device
-            if tv.command_sensor_sensor.status == None:
-                tv.command_sensor_sensor.status = False
+            tv.command_sensor_sensor.change_status(False)
 
         if device: #Device in the database
             #print('Adding data to device TV.')                

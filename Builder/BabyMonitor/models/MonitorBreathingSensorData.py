@@ -16,9 +16,9 @@ class MonitorBreathingSensorData(db.Model):
 
     monitor_breathing_sensor_id = db.Column(db.Integer, db.ForeignKey("monitor_breathing_sensor.id"))
 
-    def __repr__(self, attr):
-        return getattr(self, attr)
-        #return "<MonitorBreathingSensorData {}>".format(self.id)
+    def __repr__(self):
+        #return getattr(self, attr)
+        return "<MonitorBreathingSensorData {}>".format(self.id)
 
     def created(self):
         return self.created_at.strftime("%d/%m/%Y %H:%M:%S")

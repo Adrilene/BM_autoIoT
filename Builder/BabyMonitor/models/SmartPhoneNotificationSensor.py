@@ -17,7 +17,7 @@ class SmartPhoneNotificationSensor(db.Model):
 
     def __repr__(self):
         return "<SmartPhoneNotificationSensor {}>".format(self.id)
-
+        #return getattr(self,attr)
     def created(self):
         return self.created_at.strftime("%d/%m/%Y %H:%M:%S")
 

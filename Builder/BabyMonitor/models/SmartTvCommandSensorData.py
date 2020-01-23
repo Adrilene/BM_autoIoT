@@ -10,13 +10,12 @@ class SmartTvCommandSensorData(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     command = db.Column(db.String)
-
+    status = db.Column(db.Boolean)
 
     smart_tv_command_sensor_id = db.Column(db.Integer, db.ForeignKey("smart_tv_command_sensor.id"))
 
     def __repr__(self):
         return "<SmartTvCommandSensorData {}>".format(self.id)
-
+        
     def created(self):
         return self.created_at.strftime("%d/%m/%Y %H:%M:%S")
-

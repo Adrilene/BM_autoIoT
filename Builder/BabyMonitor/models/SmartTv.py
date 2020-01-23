@@ -11,7 +11,6 @@ class SmartTv(db.Model):
     barcode = db.Column(db.String)
     name = db.Column(db.String)
     key = db.Column(db.String, unique=True, nullable=False)
-    #status = False
 
     command_sensor_sensor = db.relationship("SmartTvCommandSensor", uselist=False, backref="smart_tv", cascade="all, delete-orphan")
 
