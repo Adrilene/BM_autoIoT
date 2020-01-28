@@ -1,7 +1,8 @@
 from main import db
 
 from datetime import datetime
-
+import random
+import time
 
 from models.SmartPhoneNotificationSensorData import SmartPhoneNotificationSensorData
 
@@ -26,14 +27,22 @@ class SmartPhoneNotificationSensor(db.Model):
         print("Notification Received!")
         print(new_metric.notification, '\n')
 
-    def add_metric(self, notification):
-        new_metric = SmartPhoneNotificationSensorData(smart_phone_notification_sensor=self)
+    def add_metric(self, notification, connection):
+        waitTime = random.randint(1,8)
+        #time.sleep(waitTime)
+        print(waitTime)
+        if connection >= 1 or waitTime < 5:
+            new_metric = SmartPhoneNotificationSensorData(smart_phone_notification_sensor=self)
 
-        new_metric.notification = notification
-        self.show_notification(new_metric)
+            new_metric.notification = notification
+            self.show_notification(new_metric)
 
-        db.session.add(new_metric)
-        db.session.commit()
+            db.session.add(new_metric)
+            db.session.commit()
+            
+            return 1
+        else: 
+            return 0
 
     def add_metric_from_dict(self, D):
         try:

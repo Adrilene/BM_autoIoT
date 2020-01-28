@@ -34,7 +34,7 @@ class MonitorBreathingSensor(db.Model):
         try:
             new_metric = MonitorBreathingSensorData(monitor_breathing_sensor=self)
 
-            print(D)
+            print(D, '\n')
 
             for k, v in D.items():
                 #if type(getattr(MonitorBreathingSensorData, k)) == property :
