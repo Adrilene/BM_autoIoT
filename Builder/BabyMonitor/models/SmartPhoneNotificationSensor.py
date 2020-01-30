@@ -27,11 +27,11 @@ class SmartPhoneNotificationSensor(db.Model):
         print("Notification Received!")
         print(new_metric.notification, '\n')
 
-    def add_metric(self, notification, connection):
+    def add_metric(self, notification):
         waitTime = random.randint(1,8)
         #time.sleep(waitTime)
-        print(waitTime)
-        if connection >= 1 or waitTime < 5:
+        
+        if waitTime < 5:
             new_metric = SmartPhoneNotificationSensorData(smart_phone_notification_sensor=self)
 
             new_metric.notification = notification

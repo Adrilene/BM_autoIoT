@@ -26,23 +26,24 @@ class SmartTvCommandSensor(db.Model):
         return self.created_at.strftime("%d/%m/%Y %H:%M:%S")
 
     def change_status(self, status):
-        new_metric = SmartTvCommandSensorData(smart_tv_command_sensor=self)
+        while getattr(self.get_last_metric_data('status'),'status') != status:
+            new_metric = SmartTvCommandSensorData(smart_tv_command_sensor=self)
 
-        new_metric.status = status
+            new_metric.status = status
 
-        db.session.add(new_metric)
-        db.session.commit()
-
+            db.session.add(new_metric)
+            db.session.commit()
+        
     def show_message(self, notification):
         print("\nFrom SmarTv")
         print("Notification Received!")
         print(notification, '\n')
+        return 1 
 
     def show_command(self, new_metric):
         print("\nFrom SmarTv")
         print("Command Received!")
         print(new_metric.command, '\n')
-        self.receive_commands(new_metric.command)
 
     def receive_commands(self, command):
         if 'status' in command.lower():
@@ -50,19 +51,23 @@ class SmartTvCommandSensor(db.Model):
                 self.change_status(True)
             elif 'false' in command.lower():
                 self.change_status(False)
+            return 1
         elif 'message' in command.lower():
             get_notification = command.lower()[8:]
-            self.show_message(get_notification)
+            return self.show_message(get_notification)
         else:
             print('Command not recognized')
+            return 0
 
     def add_metric(self, command, caller):
         if 'SmartPhone' in str(caller):
             new_metric = SmartTvCommandSensorData(smart_tv_command_sensor=self)
 
             new_metric.command = command
-
-            self.show_command(new_metric)
+            if self.receive_commands(new_metric.command): 
+                self.show_command(new_metric)
+            else:
+                return False
             db.session.add(new_metric)
             db.session.commit()
 
@@ -73,7 +78,7 @@ class SmartTvCommandSensor(db.Model):
         try:
             new_metric = SmartTvCommandSensorData(smart_tv_command_sensor=self)
 
-            print(D)
+            #print(D)
 
             for k, v in D.items():
                 #if type(getattr(SmartTvCommandSensorData, k)) == property :

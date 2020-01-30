@@ -17,6 +17,8 @@ breathing = random.choices([True, False], [0.75, 0.25], k = 1)[0]
 changes = 0 
 tv = None
 notification = None
+lock = threading.Lock()
+lock2 = threading.Lock()
 
 #MQTT Manager
 
@@ -114,10 +116,10 @@ def baby_monitor_project_update_monitor(client, userdata, msg):
         print(e)
 
 #It makes the change of the baby's breathing status
-def chooseBreathing(crying):
-    global maxNoChanges, breathing, changes, connection
+def chooseBreathing(crying, flag):
+    global maxNoChanges, breathing, changes
 
-    if crying == True:
+    if flag == True or crying == True:
         breathing = True
         changes = 0 
     
@@ -125,48 +127,62 @@ def chooseBreathing(crying):
         random.seed()
         maxNoChanges = random.randint(5,15)
         changes = 0
-        breathing = random.choices([True, False], [0.75, 0.25], k = 1)[0]
+        breathing = random.choices([True, False], [0.75, 0.25], k = 1)[0]  
     else: 
-        changes += 2
-    
+        changes += 2   
+
+def chooseCrying(flag):
+    global maxNoChanges, changes
+    if flag == -1:
+        crying = random.choices([True, False], [0.8,0.2], k = 1)[0]
+        if changes >= maxNoChanges: 
+            random.seed()
+            crying = random.choices([True, False], [0.8,0.2], k = 1)[0]
+    if flag == 1: 
+        crying = False
+    if flag == 0: 
+        print("Couldn't reach SmartPhone.")
+        crying = True
+
+    return crying
 
 def baby_monitor_project_data_monitor(client, userdata, msg):
     '''
     Callback function triggered when a message arrives in the topic "baby_monitor_project/data/monitor"
     '''
-    global tv
+    global tv, lock
     try:
-        global breathing, changes, notification, connection
+        global breathing, changes, notification
         message = json.loads(msg.payload)
         device = Monitor.query.filter_by(key=message['key']).first()
         smP = SmartPhone.query.filter_by(key=message['key']).first()
 
         if device: #Device in the database
             #print('Adding data to device.')  
-            crying = None      
             if 'crying_sensor_sensor' in message:
-                global maxNoChanges
-                crying = False
-                if changes >= maxNoChanges:
-                    random.seed()
-                    crying = random.choices([True, False], [0.2, 0.8], k = 1)[0]
-                message['sleeping_sensor_sensor']['crying'] = crying
+                message['crying_sensor_sensor']['crying'] = chooseCrying(-1)
+
+                if message['crying_sensor_sensor']['crying']: 
+                    print('Alert parents!')
+                    notification = 'The baby is crying!'
+                    message['crying_sensor_sensor']['crying'] = chooseCrying(smP.notification_sensor_sensor.add_metric(notification))
+
                 device.crying_sensor_sensor.add_metric_from_dict(message['crying_sensor_sensor'])
 
             if 'sleeping_sensor_sensor' in message:
-                if not message['sleeping_sensor_sensor']['crying']: 
-                    random.seed()
-                    message['sleeping_sensor_sensor']['sleeping'] = random.choices([True, False], [0.8, 0.20], k = 1)[0]
-                else: 
+                random.seed()
+                message['sleeping_sensor_sensor']['sleeping'] = random.choices([True, False], [0.8, 0.20], k = 1)[0]
+                
+                if message['crying_sensor_sensor']['crying']: 
                     message['sleeping_sensor_sensor']['sleeping'] = False
 
                 device.sleeping_sensor_sensor.add_metric_from_dict(message['sleeping_sensor_sensor'])
 
             if 'breathing_sensor_sensor' in message:
                 
-                chooseBreathing(crying)
+                chooseBreathing(message['crying_sensor_sensor']['crying'], 0)
                 message['breathing_sensor_sensor']['breathing'] = breathing
-               
+
                 if not breathing:
                     message['breathing_sensor_sensor']['time_no_breathing'] = changes
                 
@@ -176,15 +192,16 @@ def baby_monitor_project_data_monitor(client, userdata, msg):
                 if message['breathing_sensor_sensor']['time_no_breathing'] > 5:
                     print('Alert parents!')
                     notification = "The baby hasn't been breathing for {} seconds!".format(changes)
+                    lock.acquire()
                     if not smP.notification_sensor_sensor.add_metric(notification): 
-                        print('Error connecting the smartphone.')
+                        print('No answer from smartphone.')
                         print('Trying to reach TV...')
                         if send_message_smarttv(smP):
-                            chooseBreathing(crying)
-
-                if not message['breathing_sensor_sensor']['breathing']:
-                    count = 0
-                
+                            chooseBreathing(message['crying_sensor_sensor']['crying'], 1)
+                        lock.release()
+                    else: 
+                        chooseBreathing(message['crying_sensor_sensor']['crying'],1)
+                        lock.release()
                 baby_monitor_project_data_smart_phone(client, userdata, msg)
                 device.breathing_sensor_sensor.add_metric_from_dict(message['breathing_sensor_sensor'])
 
@@ -292,15 +309,22 @@ def baby_monitor_project_data_smart_phone(client, userdata, msg):
         print(e)
 
 def send_message_smarttv(smP):
-    global tv, notification
+    global tv, notification, lock
    
     if tv:
         sensorTv = tv.command_sensor_sensor.get_last_metric_data('status')
+
         if not getattr(sensorTv, 'status'):
+            
             if not tv.command_sensor_sensor.add_metric("status true", smP):
                 print('Error connecting the TV')
+                return False
+            print('STATUS: ', getattr(sensorTv, 'status'))   
+
         if getattr(sensorTv, 'status') and tv.command_sensor_sensor.add_metric(str("message " + notification), smP):
+            lock2.acquire()
             tv.command_sensor_sensor.add_metric("status false", smP)
+            lock2.release()
             return True
         else:
             print('Error sending the message to TV.')
@@ -308,7 +332,6 @@ def send_message_smarttv(smP):
     else:
         print('TV is off')
         return False
-
 
 def baby_monitor_project_register_smart_tv(client, userdata, msg):
     '''
@@ -392,14 +415,13 @@ def baby_monitor_project_data_smart_tv(client, userdata, msg):
         
         if not tv:
             tv = device
-            tv.command_sensor_sensor.change_status(False)
+            tv.command_sensor_sensor.change_status(random.choice([True, False]))
 
         if device: #Device in the database
             #print('Adding data to device TV.')                
             #tv = device
-            #if 'command_sensor_sensor' in message:
-            #device.command_sensor_sensor.add_metric_from_dict(message['command_sensor_sensor'])
-            
+            if 'command_sensor_sensor' in message:
+                device.command_sensor_sensor.add_metric_from_dict(message['command_sensor_sensor'])
             db.session.add(device)
             db.session.commit()
 
