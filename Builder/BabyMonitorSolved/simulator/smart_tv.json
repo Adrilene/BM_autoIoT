@@ -1,0 +1,23 @@
+{
+    "send_data_topic": "baby_monitor_project/data/smart_tv",
+    "fields": {
+        "name": "test",
+        "barcode": "test"
+    },
+    "send_interval": [
+        2,
+        2
+    ],
+    "sensors": {
+        "command_sensor_sensor": {
+            "command": [
+                "String",
+                1,
+                "test-1",
+                "test-2"
+            ]
+        }
+    },
+    "register_topic": "baby_monitor_project/register/smart_tv",
+    "key": "smart_tv-x"
+}

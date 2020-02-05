@@ -314,20 +314,17 @@ def send_message_smarttv(smP):
     if tv:
         sensorTv = tv.command_sensor_sensor.get_last_metric_data('status')
 
-        if not getattr(sensorTv, 'status'):
-            
-            if not tv.command_sensor_sensor.add_metric("status true", smP):
-                print('Error connecting the TV')
+        if getattr(sensorTv, 'status'):
+            if getattr(sensorTv, 'status') and tv.command_sensor_sensor.add_metric(str("message " + notification), smP):
+                lock2.acquire()
+                tv.command_sensor_sensor.add_metric("status false", smP)
+                lock2.release()
+                return True
+            else:
+                print('Error sending the message to TV.')
                 return False
-            print('STATUS: ', getattr(sensorTv, 'status'))   
-
-        if getattr(sensorTv, 'status') and tv.command_sensor_sensor.add_metric(str("message " + notification), smP):
-            lock2.acquire()
-            tv.command_sensor_sensor.add_metric("status false", smP)
-            lock2.release()
-            return True
-        else:
-            print('Error sending the message to TV.')
+        else: 
+            print("The TV is locked.")
             return False
     else:
         print('TV is off')

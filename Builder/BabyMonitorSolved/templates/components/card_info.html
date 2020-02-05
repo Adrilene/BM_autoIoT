@@ -1,0 +1,29 @@
+{% macro card_info(object, list_of_attrs, list_of_sensors) %}
+
+<div class="mx-3 my-3">
+    <div class="text-center justify-content-center">
+        <h5>Basic Information</h5>
+
+        <div class="row justify-content-center">
+            <table>
+                <tbody>
+                {% for attr in list_of_attrs %}
+                    <tr>
+                        <td><b class="float-left">{{attr}}:</b></td>
+                        <td><div class="float-right">{{object|attr(attr)}}</div></td>
+                    </tr>
+                {% endfor %}
+
+                {% for sensor in list_of_sensors %}
+                    <tr>
+                        <td><b class="float-left">#{{sensor}}:</b></td>
+                        <td><div class="float-right">{{(object|attr(sensor)).number_of_metrics()}}</div></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endmacro %}

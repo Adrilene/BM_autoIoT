@@ -1,0 +1,37 @@
+{# INPUT: list of tuples (device_name, device_image_path, device_description) #}
+{% macro devices_cards(devices) %}
+
+<div class="mt-5 pt-3">
+
+    {% for device in devices %}
+        <!--Card-->
+        <div class="col-md-3">
+            <div class="card card-cascade narrower mb-r">
+
+                <div class="view">
+                    <img src="{{url_for('static', filename='img/' + device[1])}}" class="img-fluid" alt="">
+                </div>
+
+                <!--Card content-->
+                <div class="card-body">
+                    <h4 class="card-title">{{device[0]}}</h4> {# Device Name #}
+                    <p class="card-text">{{device[2]}}</p> {# Device Description #}
+                    <a data-toggle="tooltip" data-placement="bottom" title="List of objects" class="btn-floating btn-sm orange float-right" href="{{url_for('{}_template.list'.format(device[3]))}}"><i class="fa fa-list-ul"></i></a>
+                </div>
+                <!--/.Card content-->
+
+            </div>
+            <!--/.Card-->
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    $(document).ready(function(){
+        $(function () {
+          $('[data-toggle="tooltip"]').tooltip()
+        })
+    });
+</script>
+
+{% endmacro %}
