@@ -18,45 +18,84 @@
     "username": "admin",
     "password": "public"
   },
-  "devices": [
+  	"devices": [
     {
-      "name": "Monitor",
-      "description": "An IoT device that sends sleeping, breathing and crying status of a baby.",
-      "fields": {
-        "name": "String",
-        "barcode": "String"
-      },
-      "sensors": [
+     	"name": "Monitor",
+      	"description": "An IoT device that sends sleeping, breathing and crying status of a baby.",
+      	"fields": {
+        	"name": "String",
+      	  	"barcode": "String"
+      	},
+      	"sensors": [
         {
           	"name": "BreathingSensor",
           	"fields": {
-            "send_interval": "String"
+            	"send_interval": "String"
         	},
           	"data_fields": {
-            "breathing": "Boolean",
-			"time_no_breathing": "Integer"
+            	"breathing": "Boolean",
+				"time_no_breathing": "Integer"
           	}
         },
         {
-          "name": "SleepingSensor",
-          "fields": {
-            "send_interval": "String"
-          },
-          "data_fields": {
-            "sleeping": "Boolean"			      
-          }
+          	"name": "SleepingSensor",
+          	"fields": {
+            	"send_interval": "String"
+          	},
+          	"data_fields": {
+            	"sleeping": "Boolean"			      
+          	}
 		},
-		{
-			"name": "CryingSensor",
-			"fields": {
-			  "send_interval": "String"
-			},
-			"data_fields": {
-			  "crying": "Boolean"			      
-			}
-		  }
+        {
+          	"name": "CryingSensor",
+          	"fields": {
+        		"send_interval": "String"
+          	},
+          	"data_fields": {
+            	"crying": "Boolean"			      
+          	}
+        }
+      	]
+	}, 
+	{
+		"name": "SmartPhone",
+		"description": "The smartphone used to receive the notifications.",
+		"fields": {
+			"name": "String",
+			"barcode": "String"
+		},
+		"sensors": [
+			{
+			  "name": "NotificationSensor",
+			  "fields": {
+					"send_interval": "String"
+				},
+			  "data_fields": {
+				  "notification": "String"
+			  }
+			}		  
+	  	]
+	},
+	{
+		"name": "SmartTv",
+		"description": "The TV that will be used as an accessory.",
+		"fields": {
+		  "name": "String",
+		  "barcode": "String"
+		},
+		"sensors": [
+			{
+			  "name": "CommandSensor",
+			  "fields": {
+					"send_interval": "String"
+				},
+			  "data_fields": {
+				  "command": "String"
+			  }
+			}		  
+	  	]
 		
-      ]
-    }
+	}
+
   ]
 }

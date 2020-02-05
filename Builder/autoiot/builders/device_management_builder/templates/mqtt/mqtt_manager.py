@@ -34,6 +34,7 @@ def {{topic.get_function_name()}}(client, userdata, msg):
     '''
 {% for line in topic.code.split('\n') %}
     {{line}}
+    {{'TESTE'}}
 {% endfor %}
 {% endfor %}
 

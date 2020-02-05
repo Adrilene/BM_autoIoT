@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block page %}
+
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<div class="container">
+
+    <div class="card mt-4">
+        <div class="justify-content-center text-center mt-4">
+            <h1 class="mb-5">Dashboard SmartTv</h1>
+        </div>
+
+        <div class="row mx-2" id="card-container">
+                <div class="col-card col-md-6 mb-3">
+                    <div class="card">
+                        {% from 'components/card_info.html' import card_info %}
+                        {{card_info( object = smart_tv , list_of_attrs = list_of_attrs , list_of_sensors = list_of_sensors )}}
+                    </div>
+                </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    $(document).ready(function(){
+        $('#card-container').masonry({
+          // options
+          itemSelector: '.col-card'
+        });
+    });
+
+</script>
+
+{% endblock %}

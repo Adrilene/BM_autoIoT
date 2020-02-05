@@ -1,0 +1,103 @@
+"sensors": [
+		  	{
+				"name": "MessageSensor",
+				"fields": {
+			  		"send_interval": "String"
+			  	},
+				"data_fields": {
+					"messages": "String"
+				}
+		  	}		  
+		]
+
+"sensors": [
+		  	{
+				"name": "CommandsSensor",
+				"fields": {
+			  		"send_interval": "String"
+			  	},
+				"data_fields": {
+					"commands": "String"
+				}
+		  	}		  
+		]
+
+
+
+#Variables useful to change data
+maxNoChanges = random.randint(1,20) 
+breathing = random.choices([True, False], [0.75, 0.25], k = 1)[0]
+changes = 0 
+
+#It makes the change of the baby's breathing status
+def chooseBreathing(crying):
+    global maxNoChanges, breathing, changes
+
+    if crying: 
+        breathing = True
+        changes = 0
+
+    if changes >= maxNoChanges: 
+        maxNoChanges = random.randint(8,20)
+        changes = 0
+        breathing = random.choices([True, False], [0.75, 0.25], k = 1)[0]
+    else:  
+        changes += 1
+
+def baby_monitor_project_data_monitor(client, userdata, msg):
+    '''
+    Callback function triggered when a message arrives in the topic "baby_monitor_project/data/monitor"
+    '''
+    
+    try:
+        global breathing, changes
+        message = json.loads(msg.payload)
+        device = Monitor.query.filter_by(key=message['key']).first()
+    
+        if device: #Device in the database
+            print('Adding data to device.')                
+            
+            if 'sleeping_sensor_sensor' in message:
+                sleeping = random.choices([True, False], [0.8, 0.20], k = 1)[0]
+                message['crying_sensor_sensor']['sleeping'] = sleeping
+                device.sleeping_sensor_sensor.add_metric_from_dict(message['sleeping_sensor_sensor'])
+            
+            if 'crying_sensor_sensor' in message:
+                crying = 0 
+                if message['crying_sensor_sensor']['sleeping']:
+                    crying = False
+                else: 
+                    crying = random.choices([True, False], [0.3, 0.7], k = 1)[0]
+
+                message['crying_sensor_sensor']['crying'] = crying
+
+                device.crying_sensor_sensor.add_metric_from_dict(message['crying_sensor_sensor'])
+    
+            if 'breathing_sensor_sensor' in message:
+                
+                chooseBreathing(message['crying_sensor_sensor']['crying'])
+                message['breathing_sensor_sensor']['breathing'] = breathing
+               
+                if not breathing:
+                    message['breathing_sensor_sensor']['time_no_breathing'] = changes
+                
+                else:
+                    message['breathing_sensor_sensor']['time_no_breathing'] = 0 
+                
+                if message['breathing_sensor_sensor']['time_no_breathing'] > 10:
+                    print('Alert parents!')
+
+                if not message['breathing_sensor_sensor']['breathing']:
+                    count = 0
+
+                device.breathing_sensor_sensor.add_metric_from_dict(message['breathing_sensor_sensor'])
+
+
+            db.session.add(device)
+            db.session.commit()
+    
+        else: #Device not in the database
+            print('Device monitor not in the database.')
+    
+    except Exception as e:
+        print(e)
