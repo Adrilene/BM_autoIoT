@@ -315,10 +315,7 @@ def send_message_smarttv(smP):
         sensorTv = tv.command_sensor_sensor.get_last_metric_data('status')
 
         if getattr(sensorTv, 'status'):
-            if getattr(sensorTv, 'status') and tv.command_sensor_sensor.add_metric(str("message " + notification), smP):
-                lock2.acquire()
-                tv.command_sensor_sensor.add_metric("status false", smP)
-                lock2.release()
+            if getattr(sensorTv, 'status') and tv.command_sensor_sensor.add_metric(str("message " + notification), smP): 
                 return True
             else:
                 print('Error sending the message to TV.')
@@ -412,7 +409,16 @@ def baby_monitor_project_data_smart_tv(client, userdata, msg):
         
         if not tv:
             tv = device
-            tv.command_sensor_sensor.change_status(random.choice([True, False]))
+            choice = random.choice([True, False])
+            tv.command_sensor_sensor.change_aplication(choice)
+
+            if choice: 
+                tv.command_sensor_sensor.change_status(False)
+            else:
+                tv.command_sensor_sensor.change_status(True)
+        
+            print('STATUS TV: ', getattr(tv.command_sensor_sensor.get_last_metric_data('status'), 'status'))
+            print('APLICATION: ', getattr(tv.command_sensor_sensor.get_last_metric_data('status'), 'aplication'))
 
         if device: #Device in the database
             #print('Adding data to device TV.')                
