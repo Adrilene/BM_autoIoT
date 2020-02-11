@@ -26,13 +26,13 @@ class SmartTvCommandSensor(db.Model):
         return self.created_at.strftime("%d/%m/%Y %H:%M:%S")
 
     def change_status(self, status):
-        while getattr(self.get_last_metric_data('status'),'status') != status:
-            new_metric = SmartTvCommandSensorData(smart_tv_command_sensor=self)
+        
+        new_metric = SmartTvCommandSensorData(smart_tv_command_sensor=self)
 
-            new_metric.status = status
+        new_metric.status = status
 
-            db.session.add(new_metric)
-            db.session.commit()
+        db.session.add(new_metric)
+        db.session.commit()
         
     def show_message(self, notification):
         print("\nFrom SmarTv")
@@ -42,7 +42,7 @@ class SmartTvCommandSensor(db.Model):
 
     def show_command(self, new_metric):
         print("\nFrom SmarTv")
-        print("Command Received!")
+        print("Command Received:")
         print(new_metric.command, '\n')
 
     def receive_commands(self, command):
@@ -56,7 +56,7 @@ class SmartTvCommandSensor(db.Model):
             get_notification = command.lower()[8:]
             return self.show_message(get_notification)
         else:
-            print('Command not recognized')
+            print('Command not recognized!')
             return 0
 
     def add_metric(self, command, caller):

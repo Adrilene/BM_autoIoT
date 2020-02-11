@@ -28,7 +28,7 @@ class SmartPhoneNotificationSensor(db.Model):
         print(new_metric.notification, '\n')
 
     def add_metric(self, notification):
-        waitTime = random.randint(1,8)
+        waitTime = random.randint(3,8)
         #time.sleep(waitTime)
         
         if waitTime < 5:

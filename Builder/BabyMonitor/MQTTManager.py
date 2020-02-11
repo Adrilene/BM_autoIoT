@@ -14,7 +14,9 @@ CONFIGURATION = 'development'
 # -Variables useful to change data
 maxNoChangesB = random.randint(8,15) 
 maxNoChangesC = random.randint(8,15) 
-breathing = random.choices([True, False], [0.75, 0.25], k = 1)[0]
+breathing = random.choices([False, True], [0.75, 0.25], k = 1)[0]
+crying = random.choices([True, False], [0.2, 0.8], k = 1)[0]
+flag = -1
 changesB = 0 
 changesC = 0
 tv = None
@@ -129,41 +131,30 @@ def chooseBreathing(crying, flag):
         random.seed()
         maxNoChangesB = random.randint(5,15)
         changesB = 0
-        breathing = random.choices([True, False], [0.75, 0.25], k = 1)[0]  
+        breathing = random.choices([False, True], [0.75, 0.25], k = 1)[0]  
     else: 
         changesB += 2   
 
 def chooseCrying(flag):
-    global maxNoChangesC, changesC
-    
-    crying = None
+    global maxNoChangesC, changesC, crying
     
     if flag == -1:
-        if changesC == 0:
-            crying = random.choices([True, False], [0.8,0.2], k = 1)[0]
-            changesC += 1
-    
-        elif changesC >= maxNoChangesC: 
+        
+        if changesC >= maxNoChangesC: 
             random.seed()
-            crying = random.choices([True, False], [0.8,0.2], k = 1)[0]
+            crying = random.choices([True, False], [0.2,0.8], k = 1)[0]
             maxNoChangesC = random.randint(8,15)
             changesC = 0
-        
-        else: 
+        else:
             changesC += 1
 
     elif flag == 1: 
         crying = False
-        maxNoChangesC = random.randint(8,15)
         changesC = 0
-
+    
     elif flag == 0: 
-        crying = True
+        print("Couldn't reach SmartPhone.")
         changesC += 1
-
-    return crying
-
-flag = -1 
 
 def baby_monitor_project_data_monitor(client, userdata, msg):
     '''
@@ -179,18 +170,18 @@ def baby_monitor_project_data_monitor(client, userdata, msg):
         if device: #Device in the database
             #print('Adding data to device.')  
             if 'crying_sensor_sensor' in message:
-                global flag
-                message['crying_sensor_sensor']['crying'] = chooseCrying(flag)
+                global flag, crying
+
+                chooseCrying(flag)
+                message['crying_sensor_sensor']['crying'] = crying
 
                 device.crying_sensor_sensor.add_metric_from_dict(message['crying_sensor_sensor'])
 
                 if message['crying_sensor_sensor']['crying']: 
-                    
                     print('Alert parents!')
                     notification = 'The baby is crying!'
-                    flag = smP.notification_sensor_sensor.add_metric(notification)
-
-                else: 
+                    flag = chooseCrying(smP.notification_sensor_sensor.add_metric(notification))
+                else:
                     flag = -1
 
             if 'sleeping_sensor_sensor' in message:
@@ -339,9 +330,6 @@ def send_message_smarttv(smP):
 
         if getattr(sensorTv, 'status'):
             if getattr(sensorTv, 'status') and tv.command_sensor_sensor.add_metric(str("message " + notification), smP):
-                lock2.acquire()
-                tv.command_sensor_sensor.add_metric("status false", smP)
-                lock2.release()
                 return True
             else:
                 print('Error sending the message to TV.')
@@ -435,12 +423,13 @@ def baby_monitor_project_data_smart_tv(client, userdata, msg):
         
         if not tv:
             tv = device
-            tv.command_sensor_sensor.change_status(random.choice([True, False]))
+            tv.command_sensor_sensor.change_status(random.choices([True, False], [0.3,0.7], k=1)[0])
 
         if device: #Device in the database
             #print('Adding data to device TV.')                
             #tv = device
             if 'command_sensor_sensor' in message:
+                tv.command_sensor_sensor.change_status(random.choices([True, False], [0.3,0.7], k=1)[0])
                 device.command_sensor_sensor.add_metric_from_dict(message['command_sensor_sensor'])
             db.session.add(device)
             db.session.commit()
