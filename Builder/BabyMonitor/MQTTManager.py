@@ -12,9 +12,11 @@ CONFIGURATION = 'development'
 #Globals
 
 # -Variables useful to change data
-maxNoChanges = random.randint(8,15) 
+maxNoChangesB = random.randint(8,15) 
+maxNoChangesC = random.randint(8,15) 
 breathing = random.choices([True, False], [0.75, 0.25], k = 1)[0]
-changes = 0 
+changesB = 0 
+changesC = 0
 tv = None
 notification = None
 lock = threading.Lock()
@@ -117,34 +119,51 @@ def baby_monitor_project_update_monitor(client, userdata, msg):
 
 #It makes the change of the baby's breathing status
 def chooseBreathing(crying, flag):
-    global maxNoChanges, breathing, changes
+    global maxNoChangesB, breathing, changesB
 
     if flag == True or crying == True:
         breathing = True
-        changes = 0 
+        changesB = 0 
     
-    elif changes >= maxNoChanges: 
+    elif changesB >= maxNoChangesB: 
         random.seed()
-        maxNoChanges = random.randint(5,15)
-        changes = 0
+        maxNoChangesB = random.randint(5,15)
+        changesB = 0
         breathing = random.choices([True, False], [0.75, 0.25], k = 1)[0]  
     else: 
-        changes += 2   
+        changesB += 2   
 
 def chooseCrying(flag):
-    global maxNoChanges, changes
+    global maxNoChangesC, changesC
+    
+    crying = None
+    
     if flag == -1:
-        crying = random.choices([True, False], [0.8,0.2], k = 1)[0]
-        if changes >= maxNoChanges: 
+        if changesC == 0:
+            crying = random.choices([True, False], [0.8,0.2], k = 1)[0]
+            changesC += 1
+    
+        elif changesC >= maxNoChangesC: 
             random.seed()
             crying = random.choices([True, False], [0.8,0.2], k = 1)[0]
-    if flag == 1: 
+            maxNoChangesC = random.randint(8,15)
+            changesC = 0
+        
+        else: 
+            changesC += 1
+
+    elif flag == 1: 
         crying = False
-    if flag == 0: 
-        print("Couldn't reach SmartPhone.")
+        maxNoChangesC = random.randint(8,15)
+        changesC = 0
+
+    elif flag == 0: 
         crying = True
+        changesC += 1
 
     return crying
+
+flag = -1 
 
 def baby_monitor_project_data_monitor(client, userdata, msg):
     '''
@@ -152,7 +171,7 @@ def baby_monitor_project_data_monitor(client, userdata, msg):
     '''
     global tv, lock
     try:
-        global breathing, changes, notification
+        global breathing, changesB, notification
         message = json.loads(msg.payload)
         device = Monitor.query.filter_by(key=message['key']).first()
         smP = SmartPhone.query.filter_by(key=message['key']).first()
@@ -160,14 +179,19 @@ def baby_monitor_project_data_monitor(client, userdata, msg):
         if device: #Device in the database
             #print('Adding data to device.')  
             if 'crying_sensor_sensor' in message:
-                message['crying_sensor_sensor']['crying'] = chooseCrying(-1)
-
-                if message['crying_sensor_sensor']['crying']: 
-                    print('Alert parents!')
-                    notification = 'The baby is crying!'
-                    message['crying_sensor_sensor']['crying'] = chooseCrying(smP.notification_sensor_sensor.add_metric(notification))
+                global flag
+                message['crying_sensor_sensor']['crying'] = chooseCrying(flag)
 
                 device.crying_sensor_sensor.add_metric_from_dict(message['crying_sensor_sensor'])
+
+                if message['crying_sensor_sensor']['crying']: 
+                    
+                    print('Alert parents!')
+                    notification = 'The baby is crying!'
+                    flag = smP.notification_sensor_sensor.add_metric(notification)
+
+                else: 
+                    flag = -1
 
             if 'sleeping_sensor_sensor' in message:
                 random.seed()
@@ -184,14 +208,14 @@ def baby_monitor_project_data_monitor(client, userdata, msg):
                 message['breathing_sensor_sensor']['breathing'] = breathing
 
                 if not breathing:
-                    message['breathing_sensor_sensor']['time_no_breathing'] = changes
+                    message['breathing_sensor_sensor']['time_no_breathing'] = changesB
                 
                 else:
                     message['breathing_sensor_sensor']['time_no_breathing'] = 0 
                 
                 if message['breathing_sensor_sensor']['time_no_breathing'] > 5:
                     print('Alert parents!')
-                    notification = "The baby hasn't been breathing for {} seconds!".format(changes)
+                    notification = "The baby hasn't been breathing for {} seconds!".format(changesB)
                     lock.acquire()
                     if not smP.notification_sensor_sensor.add_metric(notification): 
                         print('No answer from smartphone.')
@@ -202,6 +226,7 @@ def baby_monitor_project_data_monitor(client, userdata, msg):
                     else: 
                         chooseBreathing(message['crying_sensor_sensor']['crying'],1)
                         lock.release()
+
                 baby_monitor_project_data_smart_phone(client, userdata, msg)
                 device.breathing_sensor_sensor.add_metric_from_dict(message['breathing_sensor_sensor'])
 
@@ -226,8 +251,7 @@ def baby_monitor_project_register_smart_phone(client, userdata, msg):
         if not device: #Device is not in the database
             print('Creating new device.')
             device = SmartPhone()
-            device.key = message['key']
-    
+            device.key = message['key']    
             
             if 'barcode' in message:
                 device.barcode = message['barcode']
@@ -260,8 +284,7 @@ def baby_monitor_project_update_smart_phone(client, userdata, msg):
         if device: #Device in the database
             print('Updating device.')
             
-            device.key = message['key']
-    
+            device.key = message['key']    
             
             if 'barcode' in message:
                 device.barcode = message['barcode']

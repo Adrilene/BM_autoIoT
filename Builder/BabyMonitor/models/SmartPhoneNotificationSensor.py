@@ -17,7 +17,7 @@ class SmartPhoneNotificationSensor(db.Model):
     metrics = db.relationship("SmartPhoneNotificationSensorData", backref="smart_phone_notification_sensor", lazy='dynamic', cascade="all, delete-orphan")
 
     def __repr__(self):
-        return "<SmartPhoneNotificationSensor {}>".format(self.id)
+        return "<SmartPhoneNotificzationSensor {}>".format(self.id)
         #return getattr(self,attr)
     def created(self):
         return self.created_at.strftime("%d/%m/%Y %H:%M:%S")
